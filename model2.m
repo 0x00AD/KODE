@@ -9,12 +9,12 @@ m_payload = m_bed + m_patient; % kg
 
 max_offset = 0.1; % m
 
-k_spring = 2000; % N/m
-damp_spring = 100; % whatever
+k_spring = 2500; % N/m
+damp_spring = 0; % whatever
 
 k_cutoffspring = 20000; % N/m
 
-linear_act_speed = 0.1; % m/s
+linear_act_speed = 0.05; % m/s
 linear_act_max = 0.5; % m
 linear_act_delay = 0.1; % s
 
@@ -27,7 +27,7 @@ noise_rate_limit = 10;
 noise_seed = 113134;
 
 noise_start_time = 3; % s
-patient_sit_time = 1; % s
+patient_sit_time = 0.5; % s
 patient_sit_pace = 50; % kg/s
 
 DC_PID_P = 0;
@@ -38,7 +38,7 @@ DC_PID_N = 100;
 sim('model2_sim')
 
 max_bed_a = sort(findpeaks(abs(bed_acc.data)));
-max_bed_a(end-10:end)
+acc_peaks = max_bed_a(end-10:end)
 max_plat_a = max(abs(platform_acc.data))
 
 figure
