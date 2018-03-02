@@ -8,7 +8,6 @@ m_bed = 8; % kg
 m_payload = m_bed + m_patient; % kg
 
 feet_delay = 0.1; % s
-
 max_offset = 0.1; % m
 
 k_spring = 2500; % N/m
