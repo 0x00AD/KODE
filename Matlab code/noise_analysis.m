@@ -37,11 +37,14 @@ mc = dtmc(data);
 % simulate the Markov chain
 mcSimOut = simulate(mc, 3000);
 
-% Normalize to accelerations
+% Normalize to acceleration
 mcSimOut = (mcSimOut ./ accuracy .* (2*range) - range) ./ magicnumber;
+
+% Convert to m/s^2, remove gravity
+mcSimOut = (mcSimOut - 1) ./ 9.81;
 
 % TODO balance the data
 
 % Create a 30-second time series
-noiseTimeSeries = timeseries(mcSimOut, 0:0.01:30');
+noiseTimeSeries = timeseries(mcSimOut, 0:0.01:30);
 
