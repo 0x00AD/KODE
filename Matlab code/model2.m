@@ -1,4 +1,4 @@
-
+%% Init section
 %close all
 
 % Name the variables
@@ -37,57 +37,70 @@ I = 0;
 D = 840;
 N = 104;
 
+%% The single-time run section (run a section with ctrl + enter)
+
 reduction = runsim([P, I, D, N])
 
-%fminsearch(@runsim, [P; I; D; N])
+%% The PID optimizer section
 
-% figure
-% plot(bed_angle)
-% title('Bed angle')
+fminsearch(@runsim, [P; I; D; N])
+
+%% Plotting section
+
+set_param('model2_sim/Head/Primary_motor/mainpid','P',num2str(P))
+set_param('model2_sim/Head/Primary_motor/mainpid','I',num2str(I))
+set_param('model2_sim/Head/Primary_motor/mainpid','D',num2str(D))
+set_param('model2_sim/Head/Primary_motor/mainpid','N',num2str(N))
+
+sim('model2_sim')
+
+figure
+plot(bed_angle)
+title('Bed angle')
+
+figure
+hold on
+plot(bed_pos_abs + 0.2)
+plot(platform_pos)
+plot(lin_act_pos)
+plot(pos_reset)
+legend('Head pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+title('Head, actual position')
 
 % figure
 % hold on
-% plot(bed_pos_abs + 0.2)
-% plot(platform_pos)
-% plot(lin_act_pos)
-% plot(pos_reset)
-% legend('Head pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
-% title('Head, actual position')
-% 
-% % figure
-% % hold on
-% % plot(bed_pos_abs2 + 0.2)
-% % plot(platform_pos2)
-% % plot(lin_act_pos2)
-% % plot(pos_reset2)
-% % legend('Feet pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
-% % title('Feet, actual position')
-% 
+% plot(bed_pos_abs2 + 0.2)
+% plot(platform_pos2)
+% plot(lin_act_pos2)
+% plot(pos_reset2)
+% legend('Feet pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+% title('Feet, actual position')
+
+figure
+hold on
+plot(bed_pos_abs - platform_pos + 0.2)
+plot(platform_pos)
+plot(lin_act_pos)
+plot(pos_reset)
+legend('bed pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+title('Head, relative position')
+
 % figure
 % hold on
-% plot(bed_pos_abs - platform_pos + 0.2)
-% plot(platform_pos)
-% plot(lin_act_pos)
-% plot(pos_reset)
+% plot(bed_pos_abs2 - platform_pos2 + 0.2)
+% plot(platform_pos2)
+% plot(lin_act_pos2)
+% plot(pos_reset2)
 % legend('bed pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
-% title('Head, relative position')
-% 
-% % figure
-% % hold on
-% % plot(bed_pos_abs2 - platform_pos2 + 0.2)
-% % plot(platform_pos2)
-% % plot(lin_act_pos2)
-% % plot(pos_reset2)
-% % legend('bed pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
-% % title('Feet, relative position')
-% 
-% figure
-% hold on
-% plot(DC_force)
-% plot(spring_force)
-% plot(-1 * payload_weight)
-% plot(bed_force)
-% plot(cutoff_force)
-% legend('DC force', 'spring force', 'bed + patient weight', 'total force to bed', 'cutoff force', 'location', 'best')
+% title('Feet, relative position')
+
+figure
+hold on
+plot(DC_force)
+plot(spring_force)
+plot(-1 * payload_weight)
+plot(bed_force)
+plot(cutoff_force)
+legend('DC force', 'spring force', 'bed + patient weight', 'total force to bed', 'cutoff force', 'location', 'best')
 
 

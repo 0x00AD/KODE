@@ -3,10 +3,10 @@ P = PIDN(1);
 I = PIDN(2);
 D = PIDN(3);
 N = PIDN(4);
-set_param('model2_sim/Head/Primary_motor/PID','P',num2str(P))
-set_param('model2_sim/Head/Primary_motor/PID','I',num2str(I))
-set_param('model2_sim/Head/Primary_motor/PID','D',num2str(D))
-set_param('model2_sim/Head/Primary_motor/PID','N',num2str(N))
+set_param('model2_sim/Head/Primary_motor/mainpid','P',num2str(P))
+set_param('model2_sim/Head/Primary_motor/mainpid','I',num2str(I))
+set_param('model2_sim/Head/Primary_motor/mainpid','D',num2str(D))
+set_param('model2_sim/Head/Primary_motor/mainpid','N',num2str(N))
 
 sim('model2_sim')
 
