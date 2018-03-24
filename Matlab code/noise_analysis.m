@@ -4,23 +4,22 @@
 % Use the transfer probabilities to generate new data
 
 % az is the acceleration
-accuracy = 1024;
+accuracy = 128;
 % (magicnumber is 1 g acceleration)
 magicnumber = 1962;
-
-Markov = zeros(accuracy, accuracy);
 
 az(isnan(az)) = 0;
 
 % The range, within which the values fall (from -range to range)
-range = 3 * magicnumber;
+range = magicnumber;
 %range = max(max(az), abs(min(az)));
 
-% Normalize the values to scale between 0, accuracy
-az_ = floor((az + range) * accuracy / (2 * range));
-az_(az_ > 2 * range) = 2 * range;
-az_(az_ < 0) = 0;
+% Normalize the values to scale between 1, accuracy
+az_ = floor(((az - magicnumber) / range + 1) * accuracy / 2);
+az_(az_ > accuracy) = accuracy;
+az_(az_ < 1) = 1;
 
+Markov = zeros(accuracy, accuracy);
 Markov(:, accuracy/2) = 1;
 
 % Increment the values in data for each transition
@@ -37,10 +36,13 @@ mc = dtmc(Markov);
 % graphplot(mc)
 
 % simulate the Markov chain
-mcSimOut = simulate(mc, 3000);
+initStates = zeros(accuracy, 1);
+initStates(accuracy / 2) = 1;
+mcSimOut = simulate(mc, 3000, "X0", initStates);
+plot(mcSimOut);
 
 % Normalize to acceleration
-mcSimOut = (mcSimOut ./ accuracy .* (2*range) - range) ./ magicnumber;
+mcSimOut = (mcSimOut .* 2 ./ accuracy - 1) * range ./ magicnumber;
 % Remove gravity, convert to m/s^2
 mcSimOut = (mcSimOut - 1) ./ 9.81;
 
