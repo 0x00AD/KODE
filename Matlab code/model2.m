@@ -11,7 +11,7 @@ feet_delay = 0.1; % s
 max_offset = 0.1; % m
 
 k_spring = 2500; % N/m
-damp_spring = 1; % whatever
+damp_spring = 100; % whatever
 
 k_cutoffspring = 20000; % N/m
 
@@ -19,7 +19,7 @@ linear_act_speed = 0.05; % m/s
 linear_act_max = 0.5; % m
 linear_act_delay = 0.1; % s
 
-DC_max_force = 800; % N
+DC_max_force = 0; % N
 DC_delay = 0.005; % s
 
 noise_power = 0.01;
@@ -43,7 +43,7 @@ reduction = runsim([P, I, D, N])
 
 %% The PID optimizer section
 
-fminsearch(@runsim, [P; I; D; N])
+%fminsearch(@runsim, [P; I; D; N])
 
 %% Plotting section
 
@@ -79,10 +79,11 @@ title('Head, actual position')
 figure
 hold on
 plot(bed_pos_abs - platform_pos + 0.2)
-plot(platform_pos)
+%plot(platform_pos)
 plot(lin_act_pos)
 plot(pos_reset)
-legend('bed pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+%legend('bed pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+legend('bed pos', 'lin act pos', 'RESET', 'location', 'best')
 title('Head, relative position')
 
 % figure
@@ -103,4 +104,6 @@ plot(bed_force)
 plot(cutoff_force)
 legend('DC force', 'spring force', 'bed + patient weight', 'total force to bed', 'cutoff force', 'location', 'best')
 
-
+figure
+plot(platform_acc)
+legend('plat acc')
