@@ -10,16 +10,16 @@ m_payload = m_bed + m_patient; % kg
 feet_delay = 0.1; % s
 max_offset = 0.1; % m
 
-k_spring = 2500; % N/m
-damp_spring = 100; % whatever
+k_spring = 2625.4; % N/m
+damp_spring = 1; % whatever
 
 k_cutoffspring = 20000; % N/m
 
-linear_act_speed = 0.05; % m/s
+linear_act_speed = 0.1; % m/s
 linear_act_max = 0.5; % m
 linear_act_delay = 0.1; % s
 
-DC_max_force = 0; % N
+DC_max_force = 200; % N
 DC_delay = 0.005; % s
 
 noise_power = 0.01;
@@ -32,18 +32,19 @@ patient_sit_time = 0.5; % s
 patient_sit_pace = 50; % kg/s
 
 
-P = 0;
-I = 0;
-D = 840;
-N = 104;
+P = 138.3;
+I = 8.3;
+D = 10;
+N = 2625.4;
 
 %% The single-time run section (run a section with ctrl + enter)
 
-reduction = runsim([P, I, D, N])
+reduction = runsim([P, I, D, N, k_spring])
 
 %% The PID optimizer section
-
-%fminsearch(@runsim, [P; I; D; N])
+options = optimset('PlotFcns',@optimplotfval);
+x0 = [P; I; D; N; k_spring];
+fminsearch(@runsim, x0, options)
 
 %% Plotting section
 
@@ -54,9 +55,9 @@ set_param('model2_sim/Head/Primary_motor/mainpid','N',num2str(N))
 
 sim('model2_sim')
 
-figure
-plot(bed_angle)
-title('Bed angle')
+% figure
+% plot(bed_angle)
+% title('Bed angle')
 
 figure
 hold on
@@ -64,7 +65,8 @@ plot(bed_pos_abs + 0.2)
 plot(platform_pos)
 plot(lin_act_pos)
 plot(pos_reset)
-legend('Head pos', 'platform', 'lin act pos', 'RESET', 'location', 'best')
+plot(DC_force ./ 100)
+legend('Head pos', 'platform', 'lin act pos', 'RESET', 'DC force', 'location', 'best')
 title('Head, actual position')
 
 % figure
@@ -106,4 +108,6 @@ legend('DC force', 'spring force', 'bed + patient weight', 'total force to bed',
 
 figure
 plot(platform_acc)
-legend('plat acc')
+hold on
+plot(bed_acc)
+legend('plat acc', 'bed acc')

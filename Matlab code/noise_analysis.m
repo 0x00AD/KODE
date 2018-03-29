@@ -28,7 +28,7 @@ for i = 1:length(az_)-1
 end
 
 % Balance the data (WIP?)
-%Markov = Markov + fliplr(Markov);
+Markov = Markov + fliplr(Markov);
 % create the markov chan (needs the toolbox installed)
 mc = dtmc(Markov);
 
@@ -44,6 +44,15 @@ mcSimOut = simulate(mc, 3000, "X0", initStates);
 mcSimOut = (mcSimOut .* 2 ./ accuracy - 1) * range ./ magicnumber;
 % Remove gravity, convert to m/s^2
 mcSimOut = mcSimOut .* 9.81;
+
+%Post-process the simulated data to be balanced
+sum = 0;
+for i=1:3000
+    mcSimOut(i) = mcSimOut(i) - sum / 100;
+    sum = sum + mcSimOut(i);
+end
+
+figure
 plot(mcSimOut);
 
 % Create a 30-second time series
