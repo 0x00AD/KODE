@@ -1,25 +1,7 @@
+#include "test_1.h"
+
 // todo remove: just added for compilation
 void main(){}
-
-#define movementRange 0.12
-
-/**
-* The filter functions are of form
-* float filtFunc(float pos, float input_val)
-*/
-typedef float (*FILTER_F)(float, float);
-/**
-* The control functions are of form
-* float controlFunc(float pos, float dt)
-*/
-typedef float (*CONTROL_F)(float, float);
-
-// These should be controllable externally for tweaking & testing
-
-// The first test to do is with P = 0, since spring is the P
-float P = 0, D = 2;
-// Used in algB
-float safezone = 0.07;
 
 // Some useful math functions (no imports needed)
 float absf(float f){
@@ -38,21 +20,23 @@ int sgn(float val) {
     return (0 < val) - (val < 0);
 }
 
-/**
-* The core control function
-*
-* Usage: algNone(pos, dt, controlPD, filtNone)
-*
-* @input
-*	float pos: the bed (end) position, normalized to meters and zeroed appropriately. Positive up.
-*		It's assumed to be within [-movementRange, movementRange]
-*	float dt: the time difference between the last two measurements
-*	*cf: the control algorithm to be used
-*	*ff: the filter algorithm to be used
-* @output desired acceleration as a float in the range [-1, 1]: positive up, negative down
-*		-> if using 50-50 PWM force mode, the PWM duty cycle should be (f + 1)/2
-*		or with 100% PWM force mode, the duty cycle of PWM is abs(f), the direction wire sign(f)
+/*
+* Controlling the parameters
 */
+// The first test to do is with P = 0, since spring is the P
+float P = 0, D = 2;
+// Used in filters
+float safezone = 0.07;
+void setPD(float p, float d){
+	P = p;
+	D = d;
+}
+void setSafezone(float val){
+	safezone = val;
+}
+
+/*************************************************************/
+
 float getAcc(float pos, float dt, CONTROL_F cf, FILTER_F ff){
 	float control = (*cf)(pos, dt);
 	float filter = (*ff)(pos, control);
