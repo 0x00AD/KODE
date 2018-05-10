@@ -1,7 +1,12 @@
 #include "test_1.h"
+#include <stdio.h>
 
 // todo remove: just added for compilation
-void main(){}
+void main(){
+	printf("Hello World!\n");
+	options opt = createOptions(1, 1, 1, 0, 0);
+	printf("%f\n", getAcc(0.1, 0.02, opt));
+}
 
 // Some useful math functions (no imports needed)
 float absf(float f){
@@ -20,26 +25,20 @@ int sgn(float val) {
     return (0 < val) - (val < 0);
 }
 
-/*
-* Controlling the parameters
-*/
-// The first test to do is with P = 0, since spring is the P
-float P = 0, D = 2;
-// Used in filters
-float safezone = 0.07;
-void setPD(float p, float d){
-	P = p;
-	D = d;
-}
-void setSafezone(float val){
-	safezone = val;
+int control_count = 1;
+float (*controls[])(float, float, options) = {controlPD};
+int filter_count = 3;
+float (*filters[])(float, float, options) = {filtNone, filtAggressive, filtLerp};
+
+options createOptions(float P, float D, float safezone, int control_ind, int filter_ind){
+	return (options){P, D, safezone, controls[control_ind % control_count], filters[filter_ind / filter_count]};
 }
 
 /*************************************************************/
 
-float getAcc(float pos, float dt, CONTROL_F cf, FILTER_F ff){
-	float control = (*cf)(pos, dt);
-	float filter = (*ff)(pos, control);
+float getAcc(float pos, float dt, options opt){
+	float control = (*opt.cf)(pos, dt, opt);
+	float filter = (*opt.ff)(pos, control, opt);
 	return clamp(filter, -1, 1);
 }
 
@@ -47,22 +46,22 @@ float getAcc(float pos, float dt, CONTROL_F cf, FILTER_F ff){
 * Filter algorithms
 */
 
-float filtNone(float pos, float f){
+float filtNone(float pos, float f, options opt){
 	return f;
 }
-float filtAggressive(float pos, float f){
+float filtAggressive(float pos, float f, options opt){
 	// At all costs, keep within safe zone
-	return absf(pos) > safezone ? -sgn(pos) : f;
+	return absf(pos) > opt.safezone ? -sgn(pos) : f;
 }
-float filtLerp(float pos, float f){
+float filtLerp(float pos, float f, options opt){
 	// At *some* costs, keep within safe zone :D
 	// Basically, linearly interpolate from control value to max force when approaching limit
 
-	if(absf(pos) > safezone){
-		float p = (absf(pos) - safezone) / (movementRange - safezone);
+	if(absf(pos) > opt.safezone){
+		float p = (absf(pos) - opt.safezone) / (movementRange - opt.safezone);
 		return lerp(f, -sgn(pos), p);
 	}
-	
+
 	return f;
 }
 
@@ -72,8 +71,8 @@ float filtLerp(float pos, float f){
 */
 
 float lastpos;
-float controlPD(float p, float dt){
+float controlPD(float p, float dt, options opt){
 	float v = (p - lastpos) * dt;
 	lastpos = p;
-	return -p * P + v * D;
+	return -p * opt.P + v * opt.D;
 }

@@ -1,6 +1,6 @@
 
 #define movementRange 0.12
-
+struct options;
 /*
 * The filter functions are of form
 * float filtFunc(float pos, float input_val)
@@ -8,8 +8,23 @@
 * The control functions are of form
 * float controlFunc(float pos, float dt)
 */
-typedef float (*FILTER_F)(float, float);
-typedef float (*CONTROL_F)(float, float);
+typedef float (*FILTER_F)(float, float, struct options);
+typedef float (*CONTROL_F)(float, float, struct options);
+
+typedef struct options {
+	float P;
+	float D;
+	float safezone;
+	CONTROL_F cf;
+	FILTER_F ff;
+} options;
+
+/**
+* Accessibility function to choose the functions with simple indexing
+* Current ranges: control: 1, filter: 3
+* Too big indices are fixed with modulus
+*/
+options createOptions(float P, float D, float safezone, int control_ind, int filter_ind);
 
 /**
 * The core control function
@@ -26,24 +41,19 @@ typedef float (*CONTROL_F)(float, float);
 *			-> if using 50-50 PWM force mode, the PWM duty cycle should be (f + 1)/2
 *			or with 100% PWM force mode, the duty cycle of PWM is abs(f), the direction wire sign(f)
 */
-float getAcc(float pos, float dt, CONTROL_F cf, FILTER_F ff);
+float getAcc(float pos, float dt, options opt);
 
 
-/*
-* These should be controllable externally for tweaking & testing:
-*/
-void setPD(float p, float d);
-void setSafezone(float val);
 
 /*
 * Filter algorithms
 */
-float filtNone(float pos, float f);
-float filtAggressive(float pos, float f);
-float filtLerp(float pos, float f);
+float filtNone(float pos, float f, options opt);
+float filtAggressive(float pos, float f, options opt);
+float filtLerp(float pos, float f, options opt);
 
 /*
 * Control algorithms
 */
-float controlPD(float p, float dt);
+float controlPD(float p, float dt, options opt);
 
