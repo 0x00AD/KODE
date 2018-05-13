@@ -1,17 +1,18 @@
 
 #define movementRange 0.12
-struct options;
+struct opts;
+
 /*
 * The filter functions are of form
 * float filtFunc(float pos, float input_val)
 *
 * The control functions are of form
-* float controlFunc(float pos, float dt)
+* float controlFunc(float pos, float acc_z, float dt)
 */
-typedef float (*FILTER_F)(float, float, struct options);
-typedef float (*CONTROL_F)(float, float, struct options);
+typedef float (*FILTER_F)(float, float, struct opts);
+typedef float (*CONTROL_F)(float, float, float, struct opts);
 
-typedef struct options {
+typedef struct opts {
 	float P;
 	float D;
 	float safezone;
@@ -21,7 +22,7 @@ typedef struct options {
 
 /**
 * Accessibility function to choose the functions with simple indexing
-* Current ranges: control: 1, filter: 3
+* Current ranges: control: 2, filter: 3
 * Too big indices are fixed with modulus
 */
 options createOptions(float P, float D, float safezone, int control_ind, int filter_ind);
@@ -40,8 +41,9 @@ options createOptions(float P, float D, float safezone, int control_ind, int fil
 * @output desired acceleration: float in the range [-1, 1]. Positive up.
 *			-> if using 50-50 PWM force mode, the PWM duty cycle should be (f + 1)/2
 *			or with 100% PWM force mode, the duty cycle of PWM is abs(f), the direction wire sign(f)
+*			or with voltage mode, just scale so that 1 is max voltage
 */
-float getAcc(float pos, float dt, options opt);
+float getAcc(float pos, float acc_z, float dt, options opt);
 
 
 
@@ -55,5 +57,6 @@ float filtLerp(float pos, float f, options opt);
 /*
 * Control algorithms
 */
-float controlPD(float p, float dt, options opt);
+float controlPD(float pos, float acc_z, float dt, options opt);
+float controlMagic(float pos, float acc_z, float dt, options opt);
 

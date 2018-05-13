@@ -5,7 +5,7 @@
 void main(){
 	printf("Hello World!\n");
 	options opt = createOptions(1, 1, 1, 0, 0);
-	printf("%f\n", getAcc(0.1, 0.02, opt));
+	printf("%f\n", getAcc(0.1, 0.1, 0.02, opt));
 }
 
 // Some useful math functions (no imports needed)
@@ -24,20 +24,26 @@ float clamp(float val, float min, float max){
 int sgn(float val) {
     return (0 < val) - (val < 0);
 }
+float max(float a, float b) {
+    return a > b ? a : b;
+}
+float min(float a, float b) {
+    return a < b ? a : b;
+}
 
-int control_count = 1;
-float (*controls[])(float, float, options) = {controlPD};
+int control_count = 2;
+float (*controls[])(float, float, float, options) = {controlPD, controlMagic};
 int filter_count = 3;
 float (*filters[])(float, float, options) = {filtNone, filtAggressive, filtLerp};
 
 options createOptions(float P, float D, float safezone, int control_ind, int filter_ind){
-	return (options){P, D, safezone, controls[control_ind % control_count], filters[filter_ind / filter_count]};
+	return (options){P, D, safezone, controls[control_ind % control_count], filters[filter_ind % filter_count]};
 }
 
 /*************************************************************/
 
-float getAcc(float pos, float dt, options opt){
-	float control = (*opt.cf)(pos, dt, opt);
+float getAcc(float pos, float acc_z, float dt, options opt){
+	float control = (*opt.cf)(pos, acc_z, dt, opt);
 	float filter = (*opt.ff)(pos, control, opt);
 	return clamp(filter, -1, 1);
 }
@@ -47,7 +53,7 @@ float getAcc(float pos, float dt, options opt){
 */
 
 float filtNone(float pos, float f, options opt){
-	return f;
+	return absf(pos) > movementRange - 0.01 ? (pos < 0 ? max(0, f) : min(0, f)) : f;
 }
 float filtAggressive(float pos, float f, options opt){
 	// At all costs, keep within safe zone
@@ -70,9 +76,20 @@ float filtLerp(float pos, float f, options opt){
 * Control algorithms
 */
 
-float lastpos;
-float controlPD(float p, float dt, options opt){
-	float v = (p - lastpos) * dt;
-	lastpos = p;
-	return -p * opt.P + v * opt.D;
+float lastpos = 0;
+float controlPD(float pos, float acc_z, float dt, options opt){
+	float v = (pos - lastpos) * dt;
+	lastpos = pos;
+	return -(pos * opt.P + v * opt.D);
+}
+
+float targetpos = 0;
+float targetvel = 0;
+float controlMagic(float pos, float acc_z, float dt, options opt){
+	targetpos += (targetvel + 0.5 * acc_z * dt) * dt;
+	targetpos = clamp(targetpos, -movementRange, movementRange);
+	targetvel += acc_z * dt;
+	float v = (pos - lastpos) * dt;
+	lastpos = pos;
+	return -((pos - targetpos) * opt.P + (v - targetvel) * opt.D);
 }
