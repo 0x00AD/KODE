@@ -1,5 +1,8 @@
 
-#define movementRange 0.12
+#define movementRange 0.07
+#define dampingFactor 0.98
+#define levelP 1
+#define levelD 1
 struct opts;
 
 /*
@@ -19,6 +22,11 @@ typedef struct opts {
 	CONTROL_F cf;
 	FILTER_F ff;
 } options;
+
+typedef struct p {
+	float A;
+	float B;
+} pair;
 
 /**
 * Accessibility function to choose the functions with simple indexing
@@ -44,7 +52,7 @@ options createOptions(float P, float D, float safezone, int control_ind, int fil
 *			or with voltage mode, just scale so that 1 is max voltage
 */
 float getAcc(float pos, float acc_z, float dt, options opt);
-
+pair getAccLevel(float pos, float acc_z, float dt, options opt);
 
 
 /*
@@ -59,4 +67,5 @@ float filtLerp(float pos, float f, options opt);
 */
 float controlPD(float pos, float acc_z, float dt, options opt);
 float controlMagic(float pos, float acc_z, float dt, options opt);
+float controlMagicInBed(float pos, float acc_z, float dt, options opt);
 
